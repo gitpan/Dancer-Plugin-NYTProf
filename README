@@ -1,0 +1,50 @@
+NAME
+    Dancer::Plugin::NYTProf - easy Devel::NYTProf profiling for Dancer apps
+
+DESCRIPTION
+    A plugin to provide easy profiling for Dancer applications, using the
+    venerable Devel::NYTProf.
+
+    By simply loading this plugin, you'll have the detailed, helpful
+    profiling provided by Devel::NYTProf.
+
+    Each individual request to your app is profiled. Going to the URL
+    `/nytprof' in your app will present a list of profiles; selecting one
+    will invoke `nytprofhtml' to generate the HTML reports (unless they
+    already exist), then serve them up.
+
+    WARNING This is an early version of this code which is still in
+    development. In general this isn't a plugin I'd advise to use in a
+    production environment anyway, but in particular, it uses `system' to
+    execute `nytprofhtml', and I need to very carefully re-examine the code
+    to make sure that user input cannot be used to nefarious effect. You are
+    recommended to only use this in your development environment.
+
+AUTHOR
+    David Precious, `<davidp at preshweb.co.uk>'
+
+BUGS
+    Please report any bugs or feature requests at
+    http://github.com/bigpresh/Dancer-Plugin-DevelNYTProf/issues.
+
+CONTRIBUTING
+    This module is developed on GitHub:
+
+    http://github.com/bigpresh/Dancer-Plugin-DevelNYTProf
+
+    Bug reports, suggestions and pull requests all welcomed!
+
+SEE ALSO
+    Dancer
+
+    Devel::NYTProf
+
+LICENSE AND COPYRIGHT
+    Copyright 2011 David Precious.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of either: the GNU General Public License as published
+    by the Free Software Foundation; or the Artistic License.
+
+    See http://dev.perl.org/licenses/ for more information.
+
