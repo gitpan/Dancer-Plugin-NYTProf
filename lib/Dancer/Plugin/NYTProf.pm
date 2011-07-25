@@ -9,7 +9,7 @@ use Dancer qw(:syntax);
 use Dancer::FileUtils;
 use File::stat;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 =head1 NAME
@@ -186,6 +186,8 @@ Bug reports, suggestions and pull requests all welcomed!
 L<Dancer>
 
 L<Devel::NYTProf>
+
+L<Plack::Middleware::Debug::Profiler::NYTProf>
 
 
 =head1 LICENSE AND COPYRIGHT
