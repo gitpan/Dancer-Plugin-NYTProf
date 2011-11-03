@@ -9,7 +9,7 @@ use Dancer qw(:syntax);
 use Dancer::FileUtils;
 use File::stat;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 =head1 NAME
@@ -41,7 +41,7 @@ development environment.
 
 my $setting = plugin_setting;
 
-before sub {
+hook 'before' => sub {
     my $path = request->path;
     return if $path =~ m{^/nytprof};
 
@@ -70,7 +70,7 @@ before sub {
     );
 };
 
-after sub {
+hook 'after' => sub {
     DB::disable_profile();
     DB::finish_profile();
 };
@@ -168,16 +168,22 @@ get '/nytprof/:filename' => sub {
 
 David Precious, C<< <davidp at preshweb.co.uk> >>
 
+
+=head1 ACKNOWLEDGEMENTS
+
+Stefan Hornburg (racke)
+
+
 =head1 BUGS
 
 Please report any bugs or feature requests at
-L<http://github.com/bigpresh/Dancer-Plugin-DevelNYTProf/issues>.
+L<http://github.com/bigpresh/Dancer-Plugin-NYTProf/issues>.
 
 =head1 CONTRIBUTING
 
 This module is developed on GitHub:
 
-L<http://github.com/bigpresh/Dancer-Plugin-DevelNYTProf>
+L<http://github.com/bigpresh/Dancer-Plugin-NYTProf>
 
 Bug reports, suggestions and pull requests all welcomed!
 
