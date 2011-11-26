@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Dancer-Plugin-NYTProf
-version:            0.04
+version:            0.10
 abstract:           easy Devel::NYTProf profiling for Dancer apps
 author:
     - David Precious <davidp@preshweb.co.uk>
@@ -13,6 +13,7 @@ build_requires:
 requires:
     Dancer:          1.306
     Devel::NYTProf:  0
+    File::Which:     0
     Test::More:      0
 no_index:
     directory:

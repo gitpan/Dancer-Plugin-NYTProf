@@ -1,6 +1,5 @@
 package Dancer::Plugin::NYTProf;
 
-#use warnings;
 use strict;
 use Dancer::Plugin;
 use base 'Dancer::Plugin';
@@ -8,8 +7,9 @@ use Devel::NYTProf;
 use Dancer qw(:syntax);
 use Dancer::FileUtils;
 use File::stat;
+use File::Which;
 
-our $VERSION = '0.04';
+our $VERSION = '0.10';
 
 
 =head1 NAME
@@ -36,14 +36,40 @@ need to very carefully re-examine the code to make sure that user input cannot
 be used to nefarious effect.  You are recommended to only use this in your
 development environment.
 
+=head1 CONFIGURATION
+
+The plugin will work by default without any configuration required - it will
+default to writing profiling data into a dir named C<profdir> within your Dancer
+application's C<appdir>, present profiling output at C</nytprof> (not yet
+configurable), and profile all requests.
+
+Below is an example of the options you can configure:
+
+    plugins:
+        NYTProf:
+            profdir: '/tmp/profiledata'
+            nytprofhtmlpath: '/usr/local/bin/nytprofhtml'
+
+More configuration (such as the URL at which output is produced, and options to
+control which requests get profiled) will be added in a future version.  (If
+there's something you'd like to see soon, do contact me and let me know - it'll
+likely get done a lot quicker then!)
+
 =cut
 
 
 my $setting = plugin_setting;
 
+# Work out where nytprof_html is, or die with a sensible error
+my $nytprofhtml_path = File::Which::which(
+    $setting->{nytprofhtml_path} || 'nytprofhtml'
+) or die "Could not find nytprofhtml script.  Ensure it's in your path, "
+       . "or set the nytprofhtml_path option in your config.";
+
+
+
 hook 'before' => sub {
     my $path = request->path;
-    return if $path =~ m{^/nytprof};
 
     # Make sure that the directories we need to put profiling data in exist,
     # first:
@@ -58,6 +84,10 @@ hook 'before' => sub {
         mkdir Dancer::FileUtils::path($setting->{profdir}, 'html')
             or die "Could not create html dir.";
     }
+
+    # Go no further if this request was to view profiling output:
+    return if $path =~ m{^/nytprof};
+    return if $path =~ m{^/nytprof};
 
     # Now, fix up the path into something we can use for a filename:
     $path =~ s{^/}{};
@@ -76,7 +106,6 @@ hook 'after' => sub {
 };
 
 get '/nytprof' => sub {
-    my $settings = plugin_setting;
     opendir my $dirh, $setting->{profdir}
         or die "Unable to open profiles dir $setting->{profdir} - $!";
     my @files = grep { /^nytprof\.out/ } readdir $dirh;
@@ -128,15 +157,15 @@ LISTEND
 get '/nytprof/html/**' => sub {
     my ($path) = splat;
     send_file Dancer::FileUtils::path(
-        $setting->{profdir}, 'html', @$path
+        $setting->{profdir}, 'html', map { _safe_filename($_) } @$path
     ), system_path => 1;
 };
 
 get '/nytprof/:filename' => sub {
-    my $settings = plugin_setting;
 
     my $profiledata = Dancer::FileUtils::path(
-        $settings->{profdir}, param 'filename');
+        $setting->{profdir}, _safe_filename(param('filename'))
+    );
 
     if (!-f $profiledata) {
         send_error 'not_found';
@@ -148,12 +177,21 @@ get '/nytprof/:filename' => sub {
 
     # Right, do we already have generated HTML for this one?  If so, use it
     my $htmldir = Dancer::FileUtils::path(
-        $settings->{profdir}, 'html', param('filename')
+        $setting->{profdir}, 'html', _safe_filename(param('filename'))
     );
     if (! -f Dancer::FileUtils::path($htmldir, 'index.html')) {
         # TODO: scrutinise this very carefully to make sure it's not
-        # exploitable; check for failure
-        system('nytprofhtml', "--file=$profiledata", "--out=$htmldir");
+        # exploitable
+        system($nytprofhtml_path, "--file=$profiledata", "--out=$htmldir");
+
+        if ($? == -1) {
+            die "'$nytprofhtml_path' failed to execute: $!";
+        } elsif ($? & 127) {
+            die "'$nytprofhtml_path' died with signal %d, %s coredump",
+                ($? & 127), ($? & 128) ? 'with' : 'without';
+        } else {
+            die "'$nytprofhtml_path' exited with value %d", $? >> 8;
+        }
     }
 
     # Redirect off to view it:
@@ -163,6 +201,18 @@ get '/nytprof/:filename' => sub {
 };
 
 
+# Rudimentary security - remove any directory traversal or poison null
+# attempts.  We're dealing with user input here, and if they're a sneaky
+# bastard, they could convince us to send a file we shouldn't, or have
+# nytprofhtml write its output to somewhere it shouldn't.  We don't want that.
+sub _safe_filename {
+    my $filename = shift;
+    $filename =~ s/\\//g;
+    $filename =~ s/\0//g;
+    $filename =~ s/\.\.//g;
+    $filename =~ s/[\/]//g;
+    return $filename;
+}
 
 =head1 AUTHOR
 
@@ -172,6 +222,8 @@ David Precious, C<< <davidp at preshweb.co.uk> >>
 =head1 ACKNOWLEDGEMENTS
 
 Stefan Hornburg (racke)
+
+Neil Hooey (nhooey)
 
 
 =head1 BUGS
