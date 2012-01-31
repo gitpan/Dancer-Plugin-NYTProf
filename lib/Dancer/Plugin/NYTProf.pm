@@ -3,13 +3,13 @@ package Dancer::Plugin::NYTProf;
 use strict;
 use Dancer::Plugin;
 use base 'Dancer::Plugin';
-use Devel::NYTProf;
 use Dancer qw(:syntax);
 use Dancer::FileUtils;
 use File::stat;
+use File::Temp;
 use File::Which;
 
-our $VERSION = '0.10';
+our $VERSION = '0.20';
 
 
 =head1 NAME
@@ -67,6 +67,20 @@ my $nytprofhtml_path = File::Which::which(
        . "or set the nytprofhtml_path option in your config.";
 
 
+# Need to load Devel::NYTProf at runtime after setting env var, as it will
+# insist on creating an nytprof.out file immediately - even if we tell it not to
+# start profiling.
+# Dirty workaround: get a temp file, then let Devel::NYTProf use that, with
+# addpid enabled so that it will append the PID too (so the filename won't
+# exist), load Devel::NYTProf, then unlink the file.
+# This is dirty, hacky shit that needs to die, but should make things work for
+# now.
+my $tempfh = File::Temp->new;
+my $file = $tempfh->filename;
+$tempfh = undef; # let the file get deleted
+$ENV{NYTPROF} = "start=no:file=$file";
+require Devel::NYTProf;
+unlink $file;
 
 hook 'before' => sub {
     my $path = request->path;
@@ -187,10 +201,13 @@ get '/nytprof/:filename' => sub {
         if ($? == -1) {
             die "'$nytprofhtml_path' failed to execute: $!";
         } elsif ($? & 127) {
-            die "'$nytprofhtml_path' died with signal %d, %s coredump",
-                ($? & 127), ($? & 128) ? 'with' : 'without';
+            die sprintf "'%s' died with signal %d, %s coredump",
+                $nytprofhtml_path,,
+                ($? & 127), 
+                ($? & 128) ? 'with' : 'without';
         } else {
-            die "'$nytprofhtml_path' exited with value %d", $? >> 8;
+            die sprintf "'%s' exited with value %d", 
+                $nytprofhtml_path, $? >> 8;
         }
     }
 
