@@ -9,7 +9,7 @@ use File::stat;
 use File::Temp;
 use File::Which;
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 
 =head1 NAME
@@ -61,9 +61,9 @@ likely get done a lot quicker then!)
 my $setting = plugin_setting;
 
 # Work out where nytprof_html is, or die with a sensible error
-my $nytprofhtml_path = File::Which::which(
-    $setting->{nytprofhtml_path} || 'nytprofhtml'
-) or die "Could not find nytprofhtml script.  Ensure it's in your path, "
+my $nytprofhtml_path = $setting->{nytprofhtml_path} 
+    || File::Which::which('nytprofhtml')
+    or die "Could not find nytprofhtml script.  Ensure it's in your path, "
        . "or set the nytprofhtml_path option in your config.";
 
 
@@ -278,4 +278,6 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of Dancer::Plugin::NYTProf
+1; # Sam Kington didn't like that this said "End of Dancer::Plugin::NYTProf",
+   # as it's fairly obvious.  So, just for Sam's pleasure,
+   # "It's the end of the world as we know it!" ... or something.
