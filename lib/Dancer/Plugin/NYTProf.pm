@@ -9,7 +9,7 @@ use File::stat;
 use File::Temp;
 use File::Which;
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 
 =head1 NAME
@@ -171,8 +171,8 @@ LISTSTART
         } else {
             $duration = '??? seconds - corrupt profile data?';
         }
-
-        $html .= qq{<li><a href="/nytprof/$file">$label</a>}
+        my $url = request->uri_for("/nytprof/$file")->as_string;
+        $html .= qq{<li><a href="$url"">$label</a>}
                . qq{ (PID $pid, $created, $duration)</li>};
     }
 
