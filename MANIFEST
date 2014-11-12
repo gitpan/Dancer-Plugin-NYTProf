@@ -4,7 +4,7 @@ Makefile.PL
 README
 lib/Dancer/Plugin/NYTProf.pm
 t/00-load.t
-t/pod-coverage.t
-t/pod.t
+xt/pod-coverage.t
+xt/pod.t
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

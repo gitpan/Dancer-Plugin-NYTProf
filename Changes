@@ -1,5 +1,11 @@
 Revision history for Dancer-Plugin-NYTProf
 
+0.50    2014-11-12
+        [ ENHANCEMENTS ]
+        * New profiling_enabled setting, to allow disabling profile runs whilst
+          still serving up results of previous runs
+        * Improvments to how the enabled setting works.
+
 0.40    2014-10-28
         [ ENHANCEMENTS]
         * New enabled option (thanks to garu)

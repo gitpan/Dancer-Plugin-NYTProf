@@ -15,6 +15,8 @@ WriteMakefile(
         'Test::More'     => 0,
         'Dancer'         => 1.3060,
         'Devel::NYTProf' => 0,
+        'File::stat'     => 0,
+        'File::Temp'     => 0,
         'File::Which'    => 0,
         'Capture::Tiny'  => 0,
     },
